@@ -24,18 +24,18 @@ module Table
 
     def rows
       table_rows = stats.data
-        .sort_by { |_, stats| stats[:totalLines] }
+        .sort_by { |_, stats| stats['totalLines'] }
         .map { |author, stats| row(author, stats) }
         .reverse
     end
 
     def row(author, stats)
-      most_popular_file = stats[:files].sort_by { |_, c| c }.last.first
+      most_popular_file = stats['files'].sort_by { |_, c| c }.last.first
 
       [
         author,
-        stats[:totalLines],
-        stats[:files].size,
+        stats['totalLines'],
+        stats['files'].size,
         most_popular_file
       ]
     end

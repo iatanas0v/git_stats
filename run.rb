@@ -7,7 +7,7 @@ require_relative './src/table/Table'
 
 repository = Git::Repository.new(ARGV[0])
 storage = Storage::Storage.new("#{Dir.getwd}/tmp", Digest::MD5.hexdigest("#{repository.path}#{repository.hash}"))
-stats = Stats.new(JSON.parse(storage.safe_read('stats.json', '{}'), { symbolize_names: true }))
+stats = Stats.new(JSON.parse(storage.safe_read('stats.json', '{}')))
 
 puts "Storing all data in '#{storage.path}'"
 
@@ -18,6 +18,8 @@ progress = ProgressBar.new(files.size)
 
 files.each_slice(100) do |files_slice|
   files_slice.each do |file|
+    progress.increment!
+
     next if processed_files.key?(file)
 
     begin
@@ -31,8 +33,6 @@ files.each_slice(100) do |files_slice|
       puts "File: #{file}"
       exit
     end
-
-    progress.increment!
 
     processed_files[file] = file
   end

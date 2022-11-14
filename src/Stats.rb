@@ -11,10 +11,10 @@ class Stats
   def bump_author(author, file, increase: 1)
     data[author] = empty_author_object unless data.key?(author)
 
-    data[author][:totalLines] += increase
+    data[author]['totalLines'] += increase
 
-    data[author][:files][file] = 0 unless data[author][:files].key?(file)
-    data[author][:files][file] += increase
+    data[author]['files'][file] = 0 unless data[author]['files'].key?(file)
+    data[author]['files'][file] += increase
   end
 
   def to_json
@@ -25,8 +25,8 @@ class Stats
 
   def empty_author_object
     {
-      totalLines: 0,
-      files: {}
+      'totalLines' => 0,
+      'files' => {}
     }
   end
 end
