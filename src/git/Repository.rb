@@ -18,6 +18,7 @@ module Git
 
     def per_author_blame(file)
       git('blame', '--no-progress', '--line-porcelain', file)
+        .encode!('UTF-8', 'UTF-8', invalid: :replace)
         .scan(PER_AUTHOR_BLAME_REGEX)
         .flatten
         .map(&:strip)
