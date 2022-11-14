@@ -5,7 +5,7 @@ module Table
     attr_reader :stats
     private attr_accessor :table
 
-    HEADER = ['Author', 'Total Lines Owned', 'Across X Files', 'Most Popular File'].freeze
+    HEADER = ['Position', 'Author', 'Total Lines Owned', 'Across X Files', 'Most Popular File'].freeze
 
     def initialize(stats)
       @stats = stats
@@ -27,6 +27,7 @@ module Table
         .sort_by { |_, stats| stats['totalLines'] }
         .map { |author, stats| row(author, stats) }
         .reverse
+        .each_with_index.map { |row, index| [index + 1, *row] }
     end
 
     def row(author, stats)
