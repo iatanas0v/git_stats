@@ -19,6 +19,12 @@ module Storage
       File.read(path(filename))
     end
 
+    def safe_read(filename, default = '')
+      return default unless exists?(filename)
+
+      read(filename)
+    end
+
     def exists?(filename)
       File.file?(path(filename))
     end

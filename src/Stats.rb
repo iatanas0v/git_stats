@@ -4,8 +4,8 @@ class Stats
   attr_reader :data
   private attr_writer :data
 
-  def initialize
-    @data = {}
+  def initialize(initial_data = {})
+    @data = initial_data
   end
 
   def bump_author(author, file, increase: 1)

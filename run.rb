@@ -7,24 +7,32 @@ require_relative './src/table/Table'
 
 repository = Git::Repository.new(ARGV[0])
 storage = Storage::Storage.new("#{Dir.getwd}/tmp", Digest::MD5.hexdigest("#{repository.path}#{repository.hash}"))
-stats = Stats.new
+stats = Stats.new(JSON.parse(storage.safe_read('stats.json', '{}'), { symbolize_names: true }))
 
 puts "Storing all data in '#{storage.path}'"
 
-files = repository.tracked_files.slice(0, 10)
+files = repository.tracked_files
+processed_files = storage.safe_read('parsed_files.txt', '').split("\n").to_h { |file| [file, file] }
+
 progress = ProgressBar.new(files.size)
 
-files.each do |file|
-  repository
-    .per_author_blame(file)
-    .each do |author, lines_count|
-      stats.bump_author(author, file, increase: lines_count)
-    end
+files.each_slice(50) do |files_slice|
+  files_slice.each do |file|
+    next if processed_files.key?(file)
 
-  progress.increment!
+    repository
+      .per_author_blame(file)
+      .each do |author, lines_count|
+        stats.bump_author(author, file, increase: lines_count)
+      end
+
+    progress.increment!
+
+    processed_files[file] = file
+  end
+
+  storage.store('parsed_files.txt', processed_files.keys.join("\n"))
+  storage.store('stats.json', stats.to_json)
 end
-
-# Save the results in JSON
-storage.store('output.json', stats.to_json)
 
 Table::Table.new(stats).print
