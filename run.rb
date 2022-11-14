@@ -1,70 +1,30 @@
-require 'json'
+require 'digest'
 require 'progress_bar'
-require 'terminal-table'
+require_relative './src/Stats'
+require_relative './src/git/Repository'
+require_relative './src/storage/Storage'
+require_relative './src/table/Table'
 
-raise 'No path given' unless ARGV[0]
+repository = Git::Repository.new(ARGV[0])
+storage = Storage::Storage.new("#{Dir.getwd}/tmp", Digest::MD5.hexdigest("#{repository.path}#{repository.hash}"))
+stats = Stats.new
 
-repository_path = ARGV[0]
+puts "Storing all data in '#{storage.path}'"
 
-raise 'Not a real path' unless File.directory?(repository_path)
-raise 'Not a git repository' unless File.directory?("#{repository_path}/.git")
+files = repository.tracked_files.slice(0, 10)
+progress = ProgressBar.new(files.size)
 
-REGEX = %r{\((.+?)\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}}.freeze
-
-$stats = {}
-
-def bump_author_stats(author, file)
-  $stats[author] = { totalLines: 0, files: {} } unless $stats.key?(author)
-
-  $stats[author][:totalLines] += 1
-
-  $stats[author][:files][file] = 0 unless $stats[author][:files].key?(file)
-  $stats[author][:files][file] += 1
-end
-
-Dir.chdir(repository_path) do
-  files = `git ls-files`.split("\n")
-  progress = ProgressBar.new(files.size)
-
-  files.each do |file|
-    lines = `git blame --no-progress #{file}`.split("\n")
-
-    lines.each do |line|
-      matches = REGEX.match(line)
-
-      raise "REGEX matched nothing. File: #{file}. Line: `#{line}`" unless matches
-
-      author = matches[1].strip
-
-      bump_author_stats(author, file)
+files.each do |file|
+  repository
+    .per_author_blame(file)
+    .each do |author, lines_count|
+      stats.bump_author(author, file, increase: lines_count)
     end
 
-    progress.increment!
-  end
+  progress.increment!
 end
 
 # Save the results in JSON
-File.open('output.json', 'w') do |f|
-  f.write($stats.to_json)
-end
+storage.store('output.json', stats.to_json)
 
-def author_table_row(author, stats)
-  most_popular_file = stats[:files].sort_by { |_, c| c }.last.first
-
-  [
-    author,
-    stats[:totalLines],
-    stats[:files].size,
-    most_popular_file
-  ]
-end
-
-table_heading = ['Author', 'Total Lines Owned', 'Across X Files', 'Most Popular File']
-table_rows = $stats
-  .sort_by { |_, stats| stats[:totalLines] }
-  .map { |author, stats| author_table_row(author, stats) }
-  .reverse
-
-table = Terminal::Table.new :headings => table_heading, :rows => table_rows
-
-puts table
+Table::Table.new(stats).print
