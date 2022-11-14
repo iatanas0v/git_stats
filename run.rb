@@ -20,11 +20,17 @@ files.each_slice(100) do |files_slice|
   files_slice.each do |file|
     next if processed_files.key?(file)
 
-    repository
-      .per_author_blame(file)
-      .each do |author, lines_count|
-        stats.bump_author(author, file, increase: lines_count)
-      end
+    begin
+      repository
+        .per_author_blame(file)
+        .each do |author, lines_count|
+          stats.bump_author(author, file, increase: lines_count)
+        end
+    rescue => error
+      puts error
+      puts "File: #{file}"
+      exit
+    end
 
     progress.increment!
 

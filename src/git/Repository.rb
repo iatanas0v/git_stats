@@ -20,6 +20,7 @@ module Git
       git('blame', '--no-progress', '--line-porcelain', file)
         .scan(PER_AUTHOR_BLAME_REGEX)
         .flatten
+        .map(&:strip)
         .tally
     end
 
