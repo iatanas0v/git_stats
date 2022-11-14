@@ -12,6 +12,10 @@ module Table
       @table = Terminal::Table.new headings: HEADER, rows: rows
     end
 
+    def to_s
+      table.to_s
+    end
+
     def print
       puts table
     end

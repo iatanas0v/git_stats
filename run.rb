@@ -16,7 +16,7 @@ processed_files = storage.safe_read('parsed_files.txt', '').split("\n").to_h { |
 
 progress = ProgressBar.new(files.size)
 
-files.each_slice(50) do |files_slice|
+files.each_slice(100) do |files_slice|
   files_slice.each do |file|
     next if processed_files.key?(file)
 
@@ -33,6 +33,7 @@ files.each_slice(50) do |files_slice|
 
   storage.store('parsed_files.txt', processed_files.keys.join("\n"))
   storage.store('stats.json', stats.to_json)
+  storage.store('table.txt', Table::Table.new(stats))
 end
 
 Table::Table.new(stats).print
