@@ -20,7 +20,10 @@ files.each_slice(100) do |files_slice|
   files_slice.each do |file|
     progress.increment!
 
-    next if processed_files.key?(file)
+    if processed_files.key?(file)
+      progress = ProgressBar.new(progress.max - 1)
+      next
+    end
 
     begin
       repository
