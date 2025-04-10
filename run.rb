@@ -35,7 +35,7 @@ files.each_slice(100) do |files_slice|
     end
 
     extension = file.start_with?('.') ? nil : (file.include?('.') ? file.split('.').last : nil)
-    if extension.present?
+    if extension != nil
       uniq_extensions[extension] ||= 0
       uniq_extensions[extension] += 1
     end
