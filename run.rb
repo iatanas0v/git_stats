@@ -30,12 +30,13 @@ files.each_slice(100) do |files_slice|
     progress.increment!
 
     if skip_file?(file)
+      completed = [progress.count - 1, 0].max
       progress = ProgressBar.new(progress.max - 1)
+      progress.increment!(completed) if completed > 0
       next
     end
 
-    extension = file.start_with?('.') ? nil : (file.include?('.') ? file.split('.').last : nil)
-    if extension != nil
+    unless (extension = File.extname(file)).empty?
       uniq_extensions[extension] ||= 0
       uniq_extensions[extension] += 1
     end
