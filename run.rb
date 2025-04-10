@@ -16,9 +16,29 @@ processed_files = storage.safe_read('parsed_files.txt', '').split("\n").to_h { |
 
 progress = ProgressBar.new(files.size)
 
+def skip_file?(file)
+  # Ignore media files
+  ['.mmdb', '.wav', '.mp3', '.mp4', '.jpg', '.jpeg', '.png', '.gif', '.woff', '.woff2', '.ttf', '.eot', '.svg', '.ico'].any? { |ext| file.end_with?(ext) } ||
+  # Ignore vendor files
+  file.include?('/vendor/') || file.start_with?('vendor/')
+end
+
+uniq_extensions = {}
+
 files.each_slice(100) do |files_slice|
   files_slice.each do |file|
     progress.increment!
+
+    if skip_file?(file)
+      progress = ProgressBar.new(progress.max - 1)
+      next
+    end
+
+    extension = file.start_with?('.') ? nil : (file.include?('.') ? file.split('.').last : nil)
+    if extension.present?
+      uniq_extensions[extension] ||= 0
+      uniq_extensions[extension] += 1
+    end
 
     if processed_files.key?(file)
       progress = ProgressBar.new(progress.max - 1)
@@ -46,3 +66,9 @@ files.each_slice(100) do |files_slice|
 end
 
 Table::Table.new(stats).print
+
+puts "\n--------------------"
+puts "Extensions:"
+uniq_extensions.sort_by { |extension, count| -count }.each do |extension, count|
+  puts "> #{extension}: #{count}"
+end
