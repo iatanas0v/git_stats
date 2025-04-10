@@ -18,7 +18,9 @@ progress = ProgressBar.new(files.size)
 
 def skip_file?(file)
   # Ignore media files
-  ['.mmdb', '.wav', '.mp3', '.mp4', '.jpg', '.jpeg', '.png', '.gif', '.woff', '.woff2', '.ttf', '.eot', '.svg', '.ico'].any? { |ext| file.end_with?(ext) } ||
+  ['.mmdb', '.wav', '.mp3', '.mp4', '.jpg', '.jpeg', '.png', '.gif', '.woff', '.woff2', '.ttf', '.eot', '.svg', '.ico'].any? { file.end_with?(_1) } ||
+  # Ignore lock files
+  file.end_with?('.lock') ||
   # Ignore vendor files
   file.include?('/vendor/') || file.start_with?('vendor/')
 end
