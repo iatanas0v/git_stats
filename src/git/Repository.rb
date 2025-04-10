@@ -32,13 +32,11 @@ module Git
     private
 
     def git(cmd, *args)
-      command('git', cmd, *args)
+      command('git', '-C', path, cmd, *args)
     end
 
     def command(cmd, *args)
-      Dir.chdir(path) do
-        return `#{cmd} #{args.join(' ')}`
-      end
+      `#{cmd} #{args.join(' ')}`
     end
   end
 end
