@@ -18,9 +18,13 @@ progress = ProgressBar.new(files.size)
 
 def skip_file?(file)
   # Ignore media files
-  ['.mmdb', '.wav', '.mp3', '.mp4', '.jpg', '.jpeg', '.png', '.gif', '.woff', '.woff2', '.ttf', '.eot', '.svg', '.ico'].any? { file.end_with?(_1) } ||
+  ['.mmdb', '.wav', '.mp3', '.mp4', '.jpg', '.jpeg', '.png', '.gif', '.woff', '.woff2', '.ttf', '.eot', '.svg', '.ico', '.pdf'].any? { file.end_with?(_1) } ||
   # Ignore lock files
   file.end_with?('.lock') ||
+  # Ignore aut-generated files
+  ['.graphql'].any? { file.end_with?(_1) } ||
+  # Ignore rails schema
+  file == 'db/schema.rb' ||
   # Ignore vendor files
   file.include?('/vendor/') || file.start_with?('vendor/')
 end

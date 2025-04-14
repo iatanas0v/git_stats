@@ -5,7 +5,7 @@ module Table
     attr_reader :stats
     private attr_accessor :table
 
-    HEADER = ['Position', 'Author', 'Total Lines Owned', 'Across X Files', 'Most Popular File'].freeze
+    HEADER = ['Position', 'Author', 'Total Lines Owned', 'Percentage', 'Across X Files', 'Most Popular File'].freeze
 
     def initialize(stats)
       @stats = stats
@@ -36,9 +36,14 @@ module Table
       [
         author,
         stats['totalLines'],
+        "#{(total_lines.zero? ? 0 : (stats['totalLines'] * 100.0 / total_lines).round(2))}%",
         stats['files'].size,
         most_popular_file
       ]
+    end
+
+    def total_lines
+      @total_lines ||= stats.data.values.map { |stats| stats['totalLines'] }.sum
     end
   end
 end
